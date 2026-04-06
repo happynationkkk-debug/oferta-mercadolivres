@@ -1,25 +1,31 @@
 exports.handler = async function(event, context) {
-    // O Webhook da MisticPay vai enviar um POST para esta rota
+    console.log("=== WEBHOOK MISTICPAY RECEBIDO ===");
+
+    // 1. Libera a porta para a MisticPay entrar (ela só manda POST)
     if (event.httpMethod !== 'POST') {
-        return { statusCode: 405, body: 'Método não permitido' };
+        return { statusCode: 200, body: 'Método ignorado' };
     }
 
     try {
-        const dadosMistic = JSON.parse(event.body);
-        
-        // Extraímos o ID da transação e o estado enviados pela MisticPay
-        // (Nota: ajustado para cobrir as variações comuns de envio da API deles)
-        const transactionId = dadosMistic.transactionId || dadosMistic.id; 
-        const statusPagamento = dadosMistic.transactionState || dadosMistic.status;
+        // 2. Recebe o JSON puro da MisticPay
+        const payloadMistic = JSON.parse(event.body);
+        console.log("Dados recebidos da MisticPay:", payloadMistic);
 
-        // Se o estado indicar que o pagamento foi concluído com sucesso
-        if (statusPagamento === 'COMPLETO' || statusPagamento === 'PAGO') {
+        // 3. Lê as variáveis exatas que a MisticPay manda
+        const idDaTransacao = payloadMistic.transactionId;
+        const statusDoPagamento = payloadMistic.status;
+
+        console.log(`Transação: ${idDaTransacao} | Status: ${statusDoPagamento}`);
+
+        // 4. Se o status for "COMPLETO", avisamos o Supabase
+        if (statusDoPagamento === 'COMPLETO') {
+            console.log("Pagamento confirmado! Atualizando Supabase...");
             
             const supabaseUrl = 'https://rbolfrvtaulvdqajhryd.supabase.co';
             const supabaseSecretKey = 'sb_secret_-0MxutxgZw5kZBmNUd9b0w_5BJfkxoY';
 
-            // Vamos ao Supabase procurar a linha que tem este transaction_id e alterar para APROVADO
-            await fetch(`${supabaseUrl}/rest/v1/pedidos?transaction_id=eq.${transactionId}`, {
+            // O Netlify usa a chave secreta e atualiza o Supabase
+            const respostaSupa = await fetch(`${supabaseUrl}/rest/v1/pedidos?transaction_id=eq.${idDaTransacao}`, {
                 method: 'PATCH',
                 headers: {
                     'apikey': supabaseSecretKey,
@@ -29,13 +35,19 @@ exports.handler = async function(event, context) {
                 },
                 body: JSON.stringify({ status: 'APROVADO' })
             });
+
+            if (!respostaSupa.ok) {
+                console.error("Erro ao atualizar o Supabase:", await respostaSupa.text());
+            } else {
+                console.log("Supabase atualizado com sucesso para APROVADO!");
+            }
         }
 
-        // A MisticPay exige que respondamos com 200 OK rapidamente para confirmar a receção
-        return { statusCode: 200, body: 'Webhook processado com sucesso' };
-        
+        // 5. Avisamos a MisticPay que recebemos o aviso
+        return { statusCode: 200, body: 'Mensagem recebida com sucesso' };
+
     } catch (erro) {
-        console.error("Erro no processamento do webhook:", erro);
-        return { statusCode: 500, body: 'Erro interno no servidor' };
+        console.error("Falha na leitura do Webhook:", erro);
+        return { statusCode: 500, body: 'Erro interno' };
     }
 };
