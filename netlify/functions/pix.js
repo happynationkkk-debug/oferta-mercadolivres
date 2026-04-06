@@ -5,6 +5,8 @@ exports.handler = async function(event, context) {
     }
 
     try {
+        const { items, payerName, payerDocument } = JSON.parse(event.body);
+
         // O Netlify faz a chamada à MisticPay de forma oculta
         const requisicao = await fetch('https://api.misticpay.com/api/transactions/create', {
             method: 'POST',
@@ -33,7 +35,10 @@ exports.handler = async function(event, context) {
                 },
                 body: JSON.stringify({
                     transaction_id: String(resposta.data.transactionId),
-                    status: 'AGUARDANDO'
+                    status: 'AGUARDANDO',
+                    produtos: items,
+                    client_name: payerName,
+                    client_document: payerDocument
                 })
             }).catch(err => console.error("Aviso: Falha ao salvar no Supabase:", err));
         }
