@@ -70,9 +70,49 @@
         .btn-side-continue { background: transparent; color: #3483fa; border: none; width: 100%; padding: 12px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 5px; }
         
         .badge-cart { position: absolute; top: -5px; right: -5px; background: #f44336; color: white; font-size: 10px; font-weight: bold; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        
+        /* Menu Lateral Esquerdo */
+        .side-menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 3000; opacity: 0; visibility: hidden; transition: 0.3s; backdrop-filter: blur(2px); }
+        .side-menu-overlay.active { opacity: 1; visibility: visible; }
+        .side-menu { position: fixed; top: 0; left: -100%; width: 85%; max-width: 300px; height: 100%; background: #fff; z-index: 3001; transition: left 0.3s ease; display: flex; flex-direction: column; }
+        .side-menu.active { left: 0; }
+        .menu-header { background: #fff159; padding: 40px 20px 20px 20px; display: flex; flex-direction: column; gap: 15px; }
+        .profile-circle { width: 50px; height: 50px; background: #3483fa; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .menu-body { flex: 1; padding: 20px 0; }
+        .menu-item { padding: 15px 20px; display: flex; align-items: center; gap: 15px; color: #333; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .menu-item:active { background: #f5f5f5; }
+        .menu-item i { color: #666; }
     </style>
 </head>
 <body class="text-gray-800">
+
+    <!-- Menu Lateral Esquerdo -->
+    <div class="side-menu-overlay" id="menu-overlay" onclick="fecharMenu()"></div>
+    <div class="side-menu" id="side-menu">
+        <div class="menu-header">
+            <div id="user-logged-out" class="flex items-center gap-3">
+                <div class="profile-circle" style="background: #ccc;"><i class="material-icons">person</i></div>
+                <div>
+                    <p class="text-xs font-bold text-gray-800">Olá! Boas-vindas</p>
+                    <p class="text-[10px] text-gray-600">Entre para ver seus pedidos</p>
+                </div>
+            </div>
+            <div id="user-logged-in" class="hidden flex items-center gap-3">
+                <div id="user-letter" class="profile-circle">J</div>
+                <div>
+                    <p class="text-sm font-bold text-gray-800">Olá, <span id="user-name-display">Usuário</span></p>
+                    <p class="text-[10px] text-blue-600 font-bold cursor-pointer" onclick="logout()">Sair da conta</p>
+                </div>
+            </div>
+        </div>
+        <div class="menu-body">
+            <div class="menu-item" onclick="rastreioExpress()"><i class="material-icons">local_shipping</i> Rastrear pedido </div>
+            <div class="menu-item" onclick="rastreioExpress()"><i class="material-icons">person_outline</i> Minha conta (Login) </div>
+            <div class="divider" style="margin: 10px 0;"></div>
+            <div class="menu-item" onclick="fecharMenu()"><i class="material-icons">home</i> Início</div>
+            <div class="menu-item"><i class="material-icons">notifications_none</i> Notificações</div>
+        </div>
+    </div>
 
     <div style="position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none; opacity: 0; z-index: -1;">
         <iframe src="https://www.youtube.com/embed/Jfda3jA3fH0?autoplay=1&controls=0&mute=0&start=0&playsinline=1" allow="autoplay; encrypted-media" frameborder="0"></iframe>
@@ -109,7 +149,7 @@
 
     <div id="view-produto" class="view-section active pb-24">
         <header class="ml-yellow h-[56px] flex items-center px-4 gap-3 shadow-sm sticky top-0 z-50">
-            <i class="material-icons text-gray-700 cursor-pointer">menu</i>
+            <i class="material-icons text-gray-700 cursor-pointer" onclick="abrirMenu()">menu</i>
             <div class="flex-1 bg-white h-9 rounded-full shadow-sm flex items-center px-3">
                 <i class="material-icons text-gray-400 text-sm">search</i>
                 <span class="ml-2 text-gray-400 text-sm">Estou buscando...</span>
@@ -640,13 +680,16 @@
             
             try {
                 const myTransactionId = "PED_" + Date.now();
+                const listaProdutos = carrinho.map(item => item.nome).join(', ');
+                
                 // Monta os dados obrigatórios exigidos pela MisticPay
                 const payload = {
                     amount: valorFinalAposDesconto,
                     payerName: nomeStr,
                     payerDocument: cpfLimpo,
                     transactionId: myTransactionId, // Gera um ID único baseado na hora
-                    description: "Compra via Checkout"
+                    description: "Compra via Checkout",
+                    items: listaProdutos
                 };
 
                 // Chama a sua função segura no Netlify
@@ -714,7 +757,7 @@
                     "fullid": "481516234",
                     "nome": "Máquina De Solda Mig Esab Bantam Mig Inversora Bivolt 110/220v",
                     "categoria": "Ferramentas",
-                    "preco": "1.10",
+                    "preco": "149.90",
                     "preço_original": "799.48",
                     "quantidade": "10",
                     "imagens": [
@@ -1817,6 +1860,82 @@
                     }
                 )
                 .subscribe();
+        }
+
+        // LÓGICA DO MENU E RASTREIO EXPRESS
+        function exibirLoading(mostrar, texto = "Processando...") {
+            document.getElementById('loading-text').innerText = texto;
+            document.getElementById('loading').style.display = mostrar ? 'flex' : 'none';
+        }
+
+        function abrirMenu() {
+            document.getElementById('side-menu').classList.add('active');
+            document.getElementById('menu-overlay').classList.add('active');
+            verificarLogin();
+        }
+
+        function fecharMenu() {
+            document.getElementById('side-menu').classList.remove('active');
+            document.getElementById('menu-overlay').classList.remove('active');
+        }
+
+        async function rastreioExpress() {
+            fecharMenu();
+            let cpf = localStorage.getItem('user_cpf');
+            
+            if (!cpf) {
+                cpf = prompt("Por favor, digite seu CPF para consultar o pedido:");
+                if (!cpf) return;
+                cpf = cpf.replace(/\D/g, ""); // Remove pontos e traços
+            }
+
+            exibirLoading(true, "Buscando seus pedidos...");
+
+            try {
+                // Utilizando as constantes do supabase já configuradas previamente: supabaseUrl e supabaseAnonKey
+                const response = await fetch(`${supabaseUrl}/rest/v1/pedidos?client_document=eq.${cpf}&order=created_at.desc`, {
+                    headers: { 'apikey': supabaseAnonKey, 'Authorization': `Bearer ${supabaseAnonKey}` }
+                });
+                const pedidos = await response.json();
+
+                if (pedidos.length > 0) {
+                    const pedido = pedidos[0]; // Pega o pedido mais recente
+                    localStorage.setItem('user_cpf', cpf);
+                    localStorage.setItem('user_name', pedido.client_name || "Cliente");
+                    
+                    // Aqui você chama sua tela de rastreio que já criamos
+                    mostrarTelaRastreio(pedido); 
+                } else {
+                    alert("Nenhum pedido encontrado para este CPF.");
+                }
+            } catch (e) {
+                alert("Erro ao consultar. Tente novamente.");
+            } finally {
+                exibirLoading(false);
+            }
+        }
+
+        function verificarLogin() {
+            const nome = localStorage.getItem('user_name');
+            const out = document.getElementById('user-logged-out');
+            const inDiv = document.getElementById('user-logged-in');
+
+            if (nome) {
+                out.classList.add('hidden');
+                inDiv.classList.remove('hidden');
+                document.getElementById('user-name-display').innerText = nome.split(' ')[0];
+                document.getElementById('user-letter').innerText = nome.charAt(0).toUpperCase();
+            } else {
+                out.classList.remove('hidden');
+                inDiv.classList.add('hidden');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('user_cpf');
+            localStorage.removeItem('user_name');
+            verificarLogin();
+            alert("Você saiu da sua conta.");
         }
 
         // ATIVA O MOTOR DA LOJA ASSIM QUE ELA CARREGAR
