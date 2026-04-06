@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #ededed; margin: 0; overflow-x: hidden; }
         .ml-yellow { background-color: #fff159; }
@@ -331,7 +332,44 @@
         </main>
     </div>
 
-    <script>
+    <div id="view-rastreio" class="view-section pb-10">
+        <header class="ml-yellow h-[56px] flex items-center px-4 justify-center shadow-sm sticky top-0 z-50">
+            <span class="font-semibold text-gray-700">Pedido Confirmado</span>
+        </header>
+        <main class="px-4 mt-6 max-w-lg mx-auto space-y-4">
+            <div class="text-center space-y-2 mb-6">
+                <i class="material-icons text-green-500" style="font-size: 64px;">check_circle</i>
+                <h2 class="text-2xl font-bold text-gray-800">Pagamento Aprovado!</h2>
+                <p class="text-sm text-gray-500">Seu pagamento foi recebido e o pedido já está sendo preparado para o envio.</p>
+            </div>
+
+            <div class="card p-4 space-y-3 border-l-4 border-green-500">
+                <h3 class="font-bold text-gray-800 border-b pb-2">Detalhes da Entrega</h3>
+                <p class="text-sm text-gray-600"><span class="font-semibold">Recebedor:</span> <span id="rastreio-nome">--</span></p>
+                <p class="text-sm text-gray-600"><span class="font-semibold">Endereço:</span> <span id="rastreio-endereco">--</span></p>
+                <p class="text-sm text-gray-600"><span class="font-semibold">Previsão de Entrega:</span> <span id="rastreio-data" class="text-green-600 font-bold">--</span></p>
+            </div>
+
+            <div class="card p-4 space-y-4 mt-4">
+                <h3 class="font-bold text-gray-800 border-b pb-2">Status do Pedido</h3>
+                <div class="flex items-center gap-3">
+                    <i class="material-icons text-green-500">check_circle</i>
+                    <p class="text-sm font-semibold text-gray-800">Pagamento confirmado</p>
+                </div>
+                <div class="flex items-center gap-3 opacity-50">
+                    <i class="material-icons text-gray-400">inventory_2</i>
+                    <p class="text-sm text-gray-600">Em separação no estoque</p>
+                </div>
+                <div class="flex items-center gap-3 opacity-50">
+                    <i class="material-icons text-gray-400">local_shipping</i>
+                    <p class="text-sm text-gray-600">Em trânsito</p>
+                </div>
+            </div>
+
+            <button class="ml-button-primary mt-8 shadow-md" onclick="voltarParaLoja()">Continuar Comprando</button>
+        </main>
+    </div>
+<script>
         let produtoAtual = null;
         let carrinho = JSON.parse(localStorage.getItem('ml_carrinho')) || [];
         let valorFinalAposDesconto = 0;
@@ -601,12 +639,13 @@
             loading.style.display = 'flex';
             
             try {
+                const myTransactionId = "PED_" + Date.now();
                 // Monta os dados obrigatórios exigidos pela MisticPay
                 const payload = {
                     amount: valorFinalAposDesconto,
                     payerName: nomeStr,
                     payerDocument: cpfLimpo,
-                    transactionId: "PED_" + Date.now(), // Gera um ID único baseado na hora
+                    transactionId: myTransactionId, // Gera um ID único baseado na hora
                     description: "Compra via Checkout"
                 };
 
@@ -635,6 +674,7 @@
                 document.getElementById('view-pix').classList.add('active');
                 iniciarCronometroPix();
                 window.scrollTo(0,0);
+                escutarPagamentoPix(myTransactionId);
 
             } catch (erro) {
                 loading.style.display = 'none';
@@ -1722,6 +1762,63 @@
                     "vendidos": "+1mil vendidos"
           }
 ];
+        function mostrarTelaRastreio() {
+            // 1. Pega os dados que o cliente preencheu no Checkout
+            const nome = document.getElementById('payer-name').value;
+            const rua = document.getElementById('payer-rua').value;
+            const numero = document.getElementById('payer-numero').value;
+            const bairro = document.getElementById('payer-bairro').value;
+            const cidade = document.getElementById('payer-cidade').value;
+
+            // 2. Preenche a tela de rastreio com esses dados
+            document.getElementById('rastreio-nome').innerText = nome;
+            document.getElementById('rastreio-endereco').innerText = `${rua}, ${numero} - ${bairro}, ${cidade}`;
+
+            // 3. Calcula uma data de entrega (Ex: Data atual + 4 dias úteis)
+            const dataEntrega = new Date();
+            dataEntrega.setDate(dataEntrega.getDate() + 4);
+            const dataFormatada = dataEntrega.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+            document.getElementById('rastreio-data').innerText = `Chegará até ${dataFormatada}`;
+
+            // 4. Esconde a tela do PIX e mostra a do Rastreio
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById('view-rastreio').classList.add('active');
+            
+            // 5. Rola para o topo e zera o carrinho
+            window.scrollTo(0,0);
+            carrinho = [];
+            salvarCarrinho();
+        }
+
+        // NOVA PARTE SUPABASE E TELA DE RASTREIO
+        const supabaseUrl = 'https://rbolfrvtaulvdqajhryd.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJib2xmcnZ0YXVsdmRxYWpocnlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0OTYxMzIsImV4cCI6MjA5MTA3MjEzMn0.phQjt2vrE_OJpVH8GFOZyc49ZehXY8XV900J8bT6tH8';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+        function escutarPagamentoPix(transactionIdGerada) {
+            console.log("Escutando pagamento para a transação: " + transactionIdGerada);
+
+            const channel = supabase
+                .channel('custom-update-channel')
+                .on(
+                    'postgres_changes',
+                    { 
+                        event: 'UPDATE', 
+                        schema: 'public', 
+                        table: 'pedidos', 
+                        filter: `transaction_id=eq.${transactionIdGerada}` 
+                    },
+                    (payload) => {
+                        console.log('Mudança detectada!', payload);
+                        if (payload.new.status === 'APROVADO') {
+                            // O PIX foi pago! Chama a tela de rastreio
+                            mostrarTelaRastreio();
+                            supabase.removeChannel(channel);
+                        }
+                    }
+                )
+                .subscribe();
+        }
 
         // ATIVA O MOTOR DA LOJA ASSIM QUE ELA CARREGAR
         window.onload = initLoja;
