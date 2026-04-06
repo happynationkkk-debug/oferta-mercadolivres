@@ -1793,12 +1793,12 @@
         // NOVA PARTE SUPABASE E TELA DE RASTREIO
         const supabaseUrl = 'https://rbolfrvtaulvdqajhryd.supabase.co';
         const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJib2xmcnZ0YXVsdmRxYWpocnlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0OTYxMzIsImV4cCI6MjA5MTA3MjEzMn0.phQjt2vrE_OJpVH8GFOZyc49ZehXY8XV900J8bT6tH8';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 
         function escutarPagamentoPix(transactionIdGerada) {
             console.log("Escutando pagamento para a transação: " + transactionIdGerada);
 
-            const channel = supabase
+            const channel = supabaseClient
                 .channel('custom-update-channel')
                 .on(
                     'postgres_changes',
@@ -1811,9 +1811,8 @@
                     (payload) => {
                         console.log('Mudança detectada!', payload);
                         if (payload.new.status === 'APROVADO') {
-                            // O PIX foi pago! Chama a tela de rastreio
                             mostrarTelaRastreio();
-                            supabase.removeChannel(channel);
+                            supabaseClient.removeChannel(channel);
                         }
                     }
                 )
