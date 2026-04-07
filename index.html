@@ -390,6 +390,13 @@
                 <p class="text-sm text-gray-600"><span class="font-semibold">Previsão de Entrega:</span> <span id="rastreio-data" class="text-green-600 font-bold">--</span></p>
             </div>
 
+            <div class="card p-4 space-y-3 mt-4">
+                <h3 class="font-bold text-gray-800 border-b pb-2">Itens do Pedido</h3>
+                <div id="rastreio-lista-produtos" class="flex flex-col">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+
             <div class="card p-4 space-y-4 mt-4">
                 <h3 class="font-bold text-gray-800 border-b pb-2">Status do Pedido</h3>
                 <div class="flex items-center gap-3">
@@ -527,16 +534,38 @@
 
         function adicionarAoCarrinho() {
             let item = carrinho.find(i => i.fullid === produtoAtual.fullid);
-            if(item) item.qtd += 1;
-            else carrinho.push({...produtoAtual, qtd: 1});
+            if(item) {
+                item.qtd += 1;
+                item.quantidade = item.qtd;
+            } else {
+                carrinho.push({
+                    ...produtoAtual, 
+                    qtd: 1,
+                    titulo: produtoAtual.nome,
+                    quantidade: 1,
+                    preco: parseFloat(produtoAtual.preco),
+                    imagem: (produtoAtual.imagens && produtoAtual.imagens.length > 0) ? produtoAtual.imagens[0].valor : ""
+                });
+            }
             salvarCarrinho();
             abrirSideCart();
         }
 
         function comprarAgora() {
             let item = carrinho.find(i => i.fullid === produtoAtual.fullid);
-            if(item) item.qtd += 1;
-            else carrinho.push({...produtoAtual, qtd: 1});
+            if(item) {
+                item.qtd += 1;
+                item.quantidade = item.qtd;
+            } else {
+                carrinho.push({
+                    ...produtoAtual, 
+                    qtd: 1,
+                    titulo: produtoAtual.nome,
+                    quantidade: 1,
+                    preco: parseFloat(produtoAtual.preco),
+                    imagem: (produtoAtual.imagens && produtoAtual.imagens.length > 0) ? produtoAtual.imagens[0].valor : ""
+                });
+            }
             salvarCarrinho();
             irParaCheckout();
         }
@@ -596,6 +625,7 @@
                 removerItemSideCart(index);
             } else {
                 carrinho[index].qtd += delta;
+                carrinho[index].quantidade = carrinho[index].qtd;
                 salvarCarrinho();
                 renderizarSideCart();
             }
@@ -680,7 +710,7 @@
             
             try {
                 const myTransactionId = "PED_" + Date.now();
-                const listaProdutos = carrinho.map(item => item.nome).join(', ');
+                const carrinhoCompletoJson = JSON.stringify(carrinho);
                 
                 // Monta os dados obrigatórios exigidos pela MisticPay
                 const payload = {
@@ -689,11 +719,11 @@
                     payerDocument: cpfLimpo,
                     transactionId: myTransactionId, // Gera um ID único baseado na hora
                     description: "Compra via Checkout",
-                    items: listaProdutos
+                    items: carrinhoCompletoJson
                 };
 
-                // Chama a sua função segura na Vercel
-                const resposta = await fetch('/api/pix', {
+                // Chama a sua função segura no Netlify
+                const resposta = await fetch('/.netlify/functions/pix', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -704,6 +734,7 @@
                 if (!resposta.ok || !retorno.data) {
                     throw new Error(retorno.message || "Falha na comunicação com a API.");
                 }
+
                 // Popula a tela com os dados reais retornados pela MisticPay
                 document.getElementById('render-qr').src = retorno.data.qrCodeBase64;
                 document.getElementById('pix-copy-text').value = retorno.data.copyPaste;
@@ -756,7 +787,7 @@
                     "fullid": "481516234",
                     "nome": "Máquina De Solda Mig Esab Bantam Mig Inversora Bivolt 110/220v",
                     "categoria": "Ferramentas",
-                    "preco": "1.10",
+                    "preco": "149.90",
                     "preço_original": "799.48",
                     "quantidade": "10",
                     "imagens": [
@@ -1804,23 +1835,82 @@
                     "vendidos": "+1mil vendidos"
           }
 ];
-        function mostrarTelaRastreio() {
-            // 1. Pega os dados que o cliente preencheu no Checkout
-            const nome = document.getElementById('payer-name').value;
-            const rua = document.getElementById('payer-rua').value;
-            const numero = document.getElementById('payer-numero').value;
-            const bairro = document.getElementById('payer-bairro').value;
-            const cidade = document.getElementById('payer-cidade').value;
+        function mostrarTelaRastreio(pedido) {
+            let nome, rua, numero, bairro, cidade;
+            if (pedido) {
+                nome = pedido.client_name || "--";
+                document.getElementById('rastreio-nome').innerText = nome;
+                document.getElementById('rastreio-endereco').innerText = "Endereço cadastrado no pedido.";
+            } else {
+                // 1. Pega os dados que o cliente preencheu no Checkout
+                nome = document.getElementById('payer-name').value;
+                rua = document.getElementById('payer-rua').value;
+                numero = document.getElementById('payer-numero').value;
+                bairro = document.getElementById('payer-bairro').value;
+                cidade = document.getElementById('payer-cidade').value;
 
-            // 2. Preenche a tela de rastreio com esses dados
-            document.getElementById('rastreio-nome').innerText = nome;
-            document.getElementById('rastreio-endereco').innerText = `${rua}, ${numero} - ${bairro}, ${cidade}`;
+                document.getElementById('rastreio-nome').innerText = nome;
+                document.getElementById('rastreio-endereco').innerText = `${rua}, ${numero} - ${bairro}, ${cidade}`;
+            }
 
-            // 3. Calcula uma data de entrega (Ex: Data atual + 4 dias úteis)
+            // 2. Calcula uma data de entrega (Ex: Data atual + 4 dias úteis)
             const dataEntrega = new Date();
+            if (pedido && pedido.created_at) {
+                dataEntrega.setTime(Date.parse(pedido.created_at));
+            }
             dataEntrega.setDate(dataEntrega.getDate() + 4);
             const dataFormatada = dataEntrega.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
             document.getElementById('rastreio-data').innerText = `Chegará até ${dataFormatada}`;
+
+            // 3. Renderiza a lista de produtos comprados (VISUAL DE CARRINHO)
+            const containerProdutos = document.getElementById('rastreio-lista-produtos');
+            containerProdutos.innerHTML = ''; // Limpa antes de preencher
+            
+            let itensParaRenderizar = [];
+            let jsonString = '';
+
+            if (pedido && pedido.produtos) {
+                jsonString = pedido.produtos;
+            } else if (!pedido) {
+                jsonString = JSON.stringify(carrinho);
+            }
+
+            try {
+                if(jsonString){
+                    itensParaRenderizar = JSON.parse(jsonString);
+                    itensParaRenderizar.forEach(item => {
+                        const precoFormatado = Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                        const imagemSrc = item.imagem || ((item.imagens && item.imagens.length > 0) ? item.imagens[0].valor : 'https://via.placeholder.com/80?text=Sem+Foto');
+                        const tituloProduto = item.titulo || item.nome;
+
+                        containerProdutos.innerHTML += `
+                            <div class="py-4 flex gap-4 border-b border-gray-100 last:border-0">
+                                <div class="w-[72px] h-[72px] bg-white border border-gray-200 rounded flex-shrink-0 flex items-center justify-center overflow-hidden p-1">
+                                    <img src="${imagemSrc}" class="w-full h-full object-contain">
+                                </div>
+                                
+                                <div class="flex-1 flex flex-col justify-between">
+                                    <p class="text-[13px] font-medium text-gray-800 leading-tight" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                        ${tituloProduto}
+                                    </p>
+                                    <p class="text-sm font-bold text-gray-900 mt-1">${precoFormatado}</p>
+                                    <p class="text-[11px] text-gray-500 font-semibold mt-1 bg-gray-100 w-fit px-2 py-0.5 rounded">
+                                        Quantidade: ${item.qtd || item.quantidade || 1}
+                                    </p>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    containerProdutos.innerHTML = '<p class="text-xs text-gray-400 italic">Detalhes dos itens indisponíveis</p>';
+                }
+            } catch(e) {
+                containerProdutos.innerHTML = `
+                    <div class="py-3">
+                        <p class="text-sm font-medium text-gray-800">${jsonString}</p>
+                    </div>
+                `;
+            }
 
             // 4. Esconde a tela do PIX e mostra a do Rastreio
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
@@ -1853,7 +1943,7 @@
                     (payload) => {
                         console.log('Mudança detectada!', payload);
                         if (payload.new.status === 'APROVADO') {
-                            mostrarTelaRastreio();
+                            mostrarTelaRastreio(payload.new);
                             supabaseClient.removeChannel(channel);
                         }
                     }
