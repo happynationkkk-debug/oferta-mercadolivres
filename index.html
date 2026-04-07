@@ -722,8 +722,8 @@
                     items: carrinhoCompletoJson
                 };
 
-                // Chama a sua função segura no Netlify
-                const resposta = await fetch('/.netlify/functions/pix', {
+                // Chama a sua função segura na Vercel
+                const resposta = await fetch('/api/pix', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
