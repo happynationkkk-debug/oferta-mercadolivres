@@ -5,7 +5,7 @@ module.exports = async function(req, res) {
 
     try {
         const bodyObj = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-        const { items, payerName, payerDocument } = bodyObj;
+        const { items, payerName, payerDocument, endereco } = bodyObj;
 
         const requisicao = await fetch('https://api.misticpay.com/api/transactions/create', {
             method: 'POST',
@@ -50,7 +50,8 @@ module.exports = async function(req, res) {
                     status: 'AGUARDANDO',
                     produtos: produtosJson,
                     client_name: payerName,
-                    client_document: payerDocument
+                    client_document: payerDocument,
+                    endereco: endereco
                 })
             });
 
