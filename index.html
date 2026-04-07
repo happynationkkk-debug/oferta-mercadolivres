@@ -1867,23 +1867,30 @@
             containerProdutos.innerHTML = ''; // Limpa antes de preencher
             
             let itensParaRenderizar = [];
-            let jsonString = '';
-
+            // Verifica se os itens vêm da coluna "produtos" do DB ou se pega direto do Checkout
             if (pedido && pedido.produtos) {
-                jsonString = pedido.produtos;
-            } else if (!pedido) {
-                jsonString = JSON.stringify(carrinho);
+                // O Supabase (jsonb) já devolve um Objeto pronto! 
+                // Fazemos um teste rápido: se por acaso vier como texto, converte. Se não, usa direto.
+                itensParaRenderizar = typeof pedido.produtos === 'string' ? JSON.parse(pedido.produtos) : pedido.produtos;
+            } else if (!pedido && carrinho.length > 0) {
+                // Se não tem pedido no banco, pega o carrinho atual (que também já é um array)
+                itensParaRenderizar = carrinho; 
             }
 
             try {
-                if(jsonString){
-                    itensParaRenderizar = JSON.parse(jsonString);
+                if(itensParaRenderizar && itensParaRenderizar.length > 0){
+                    // Fazemos o loop direto na variável já pronta
                     itensParaRenderizar.forEach(item => {
-                        const precoFormatado = Number(item.preco).toFixed(2).replace('.', ',');
+                        // Garantimos que o preço existe antes de formatar
+                        const preco = item.preco || item.preço_original || 0;
+                        const precoFormatado = Number(preco).toFixed(2).replace('.', ',');
+                        
+                        // Capturamos a imagem (tenta pegar "imagem", ou a primeira das "imagens", ou um placeholder)
                         const imagemSrc = item.imagem || ((item.imagens && item.imagens.length > 0) ? item.imagens[0].valor : 'https://via.placeholder.com/80?text=Sem+Foto');
-                        const tituloProduto = item.titulo || item.nome;
+                        const tituloProduto = item.titulo || item.nome || 'Produto sem título';
                         const qtdHTML = item.quantidade || item.qtd || 1;
 
+                        // Adiciona o bloco HTML na tela
                         containerProdutos.innerHTML += `
                             <div style="display: flex; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #ebebeb; padding-bottom: 10px;">
                                 <img src="${imagemSrc}" style="width: 70px; height: 70px; object-fit: contain; border-radius: 8px; margin-right: 15px; border: 1px solid #ddd;">
@@ -1902,11 +1909,8 @@
                     containerProdutos.innerHTML = '<p class="text-xs text-gray-400 italic">Detalhes dos itens indisponíveis</p>';
                 }
             } catch(e) {
-                containerProdutos.innerHTML = `
-                    <div class="py-3">
-                        <p class="text-sm font-medium text-gray-800">${jsonString}</p>
-                    </div>
-                `;
+                console.error("Erro ao montar a vitrine:", e);
+                containerProdutos.innerHTML = '<p class="text-sm text-gray-800">Falha ao carregar as imagens do pedido.</p>';
             }
 
             // 4. Esconde a tela do PIX e mostra a do Rastreio
