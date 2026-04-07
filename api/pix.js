@@ -36,13 +36,14 @@ module.exports = async function(req, res) {
                 }
             }
 
-            await fetch(`${supabaseUrl}/rest/v1/pedidos`, {
+            // NOVA PARTE: O VIGIA DO SUPABASE
+            const supaReq = await fetch(`${supabaseUrl}/rest/v1/pedidos`, {
                 method: 'POST',
                 headers: {
                     'apikey': supabaseSecretKey,
                     'Authorization': `Bearer ${supabaseSecretKey}`,
                     'Content-Type': 'application/json',
-                    'Prefer': 'return=minimal'
+                    'Prefer': 'return=representation'
                 },
                 body: JSON.stringify({
                     transaction_id: String(resposta.data.transactionId),
@@ -51,7 +52,15 @@ module.exports = async function(req, res) {
                     client_name: payerName,
                     client_document: payerDocument
                 })
-            }).catch(err => console.error("Aviso: Falha ao salvar no Supabase:", err));
+            });
+
+            // Se o Supabase rejeitar, ele vai cuspir o erro real no log da Vercel!
+            if (!supaReq.ok) {
+                const erroRealSupa = await supaReq.text();
+                console.error("ERRO GRAVE DO SUPABASE:", erroRealSupa);
+            } else {
+                console.log("SUCESSO: Linha criada no Supabase antes do pagamento!");
+            }
         }
 
         return res.status(200).json(resposta);
