@@ -1879,24 +1879,21 @@
                 if(jsonString){
                     itensParaRenderizar = JSON.parse(jsonString);
                     itensParaRenderizar.forEach(item => {
-                        const precoFormatado = Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                        const precoFormatado = Number(item.preco).toFixed(2).replace('.', ',');
                         const imagemSrc = item.imagem || ((item.imagens && item.imagens.length > 0) ? item.imagens[0].valor : 'https://via.placeholder.com/80?text=Sem+Foto');
                         const tituloProduto = item.titulo || item.nome;
+                        const qtdHTML = item.quantidade || item.qtd || 1;
 
                         containerProdutos.innerHTML += `
-                            <div class="py-4 flex gap-4 border-b border-gray-100 last:border-0">
-                                <div class="w-[72px] h-[72px] bg-white border border-gray-200 rounded flex-shrink-0 flex items-center justify-center overflow-hidden p-1">
-                                    <img src="${imagemSrc}" class="w-full h-full object-contain">
-                                </div>
+                            <div style="display: flex; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #ebebeb; padding-bottom: 10px;">
+                                <img src="${imagemSrc}" style="width: 70px; height: 70px; object-fit: contain; border-radius: 8px; margin-right: 15px; border: 1px solid #ddd;">
                                 
-                                <div class="flex-1 flex flex-col justify-between">
-                                    <p class="text-[13px] font-medium text-gray-800 leading-tight" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                        ${tituloProduto}
-                                    </p>
-                                    <p class="text-sm font-bold text-gray-900 mt-1">${precoFormatado}</p>
-                                    <p class="text-[11px] text-gray-500 font-semibold mt-1 bg-gray-100 w-fit px-2 py-0.5 rounded">
-                                        Quantidade: ${item.qtd || item.quantidade || 1}
-                                    </p>
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="font-size: 14px; font-weight: bold; color: #333; line-height: 1.2;">${tituloProduto}</span>
+                                    <span style="font-size: 13px; color: #666; margin-top: 4px;">Quantidade: ${qtdHTML}</span>
+                                    <span style="font-size: 15px; font-weight: bold; color: #00a650; margin-top: 4px;">
+                                        R$ ${precoFormatado}
+                                    </span>
                                 </div>
                             </div>
                         `;
