@@ -696,6 +696,8 @@
             const cepStr = document.getElementById('payer-cep').value.trim();
             const ruaStr = document.getElementById('payer-rua').value.trim();
             const numStr = document.getElementById('payer-numero').value.trim();
+            const bairroStr = document.getElementById('payer-bairro').value.trim();
+            const cidadeStr = document.getElementById('payer-cidade').value.trim();
 
             // Limpa o CPF para enviar apenas os números para a API
             const cpfLimpo = cpfStr.replace(/\D/g, '');
@@ -711,6 +713,7 @@
             try {
                 const myTransactionId = "PED_" + Date.now();
                 const carrinhoCompletoJson = JSON.stringify(carrinho);
+                const enderecoCompleto = `${ruaStr}, ${numStr} - ${bairroStr}, ${cidadeStr}`;
                 
                 // Monta os dados obrigatórios exigidos pela MisticPay
                 const payload = {
@@ -719,7 +722,8 @@
                     payerDocument: cpfLimpo,
                     transactionId: myTransactionId, // Gera um ID único baseado na hora
                     description: "Compra via Checkout",
-                    items: carrinhoCompletoJson
+                    items: carrinhoCompletoJson,
+                    endereco: enderecoCompleto
                 };
 
                 // Chama a sua função segura na Vercel
@@ -1840,7 +1844,7 @@
             if (pedido) {
                 nome = pedido.client_name || "--";
                 document.getElementById('rastreio-nome').innerText = nome;
-                document.getElementById('rastreio-endereco').innerText = "Endereço cadastrado no pedido.";
+                document.getElementById('rastreio-endereco').innerText = pedido.endereco || "Endereço não informado.";
             } else {
                 // 1. Pega os dados que o cliente preencheu no Checkout
                 nome = document.getElementById('payer-name').value;
