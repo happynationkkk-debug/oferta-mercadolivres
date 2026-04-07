@@ -27,31 +27,21 @@ export default async function handler(req, res) {
             const supabaseUrl = 'https://rbolfrvtaulvdqajhryd.supabase.co';
             const supabaseSecretKey = 'sb_secret_-0MxutxgZw5kZBmNUd9b0w_5BJfkxoY'; 
 
-            // TRUQUE DE MESTRE: Garante que os itens sejam salvos como um Array JSON limpo 
-            // no Supabase, e não como um texto embolado.
+           // TRUQUE DE MESTRE: Garante que os itens sejam salvos como um Array JSON limpo 
+            // Se vier texto antigo ou erro de cache, ele não quebra o servidor!
             let produtosJson = null;
             if (items) {
-                produtosJson = typeof items === 'string' ? JSON.parse(items) : items;
+                if (typeof items === 'string') {
+                    try {
+                        produtosJson = JSON.parse(items); // Tenta ler como JSON
+                    } catch (err) {
+                        // Se for texto normal, forçamos virar um JSON válido pro Supabase aceitar
+                        produtosJson = [{ titulo: items, quantidade: 1 }]; 
+                    }
+                } else {
+                    produtosJson = items; // Já é objeto
+                }
             }
-
-            await fetch(`${supabaseUrl}/rest/v1/pedidos`, {
-                method: 'POST',
-                headers: {
-                    'apikey': supabaseSecretKey,
-                    'Authorization': `Bearer ${supabaseSecretKey}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'return=minimal'
-                },
-                body: JSON.stringify({
-                    transaction_id: String(resposta.data.transactionId),
-                    status: 'AGUARDANDO',
-                    produtos: produtosJson, // Salvando o carrinho completo (com foto, preço, etc.)
-                    client_name: payerName,
-                    client_document: payerDocument
-                })
-            }).catch(err => console.error("Aviso: Falha ao salvar no Supabase:", err));
-        }
-
         // Devolve a resposta (QR Code) para o nosso frontend usando o padrão da Vercel
         return res.status(200).json(resposta);
 
