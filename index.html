@@ -5,142 +5,129 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verificação de Segurança</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #f7f7f7;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-family: Arial, sans-serif;
+        body { 
+            margin: 0; 
+            padding: 0; 
+            background-color: #f7f7f7; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            font-family: Arial, sans-serif; 
         }
-
-        #slider-puzzle::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 4px;
-            cursor: pointer;
+        
+        #slider-puzzle::-webkit-slider-thumb { 
+            -webkit-appearance: none; 
+            appearance: none; 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 4px; 
+            cursor: pointer; 
         }
-
-        #tela-de-bloqueio {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            width: 320px;
-            text-align: center;
+        
+        #tela-de-bloqueio { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15); 
+            width: 320px; 
+            text-align: center; 
         }
-
-        .puzzle-container {
-            position: relative;
-            width: 100%;
-            height: 160px;
-            background-image: url('https://ludopia.com.br/wp-content/uploads/2021/08/brinquedo-quebra-cabec%CC%A7as-9-pec%CC%A7as-2-ludopia.png');
-            background-size: cover;
-            background-position: center;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 20px;
+        
+        .puzzle-container { 
+            position: relative; 
+            width: 100%; 
+            height: 160px; 
+            background-image: url('https://ludopia.com.br/wp-content/uploads/2021/08/brinquedo-quebra-cabec%CC%A7as-9-pec%CC%A7as-2-ludopia.png'); 
+            background-size: cover; 
+            background-position: center; 
+            border-radius: 4px; 
+            overflow: hidden; 
+            margin-bottom: 20px; 
         }
-
-        #alvo {
-            position: absolute;
-            top: 50px;
-            left: 200px;
-            width: 50px;
-            height: 50px;
-            background: rgba(0, 0, 0, 0.5);
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            border-radius: 4px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        
+        #alvo { 
+            position: absolute; 
+            top: 50px; 
+            left: 200px; 
+            width: 50px; 
+            height: 50px; 
+            background: rgba(0, 0, 0, 0.5); 
+            border: 2px solid rgba(255, 255, 255, 0.5); 
+            border-radius: 4px; 
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8); 
         }
-
-        #peca {
-            position: absolute;
-            top: 50px;
-            left: 10px;
-            width: 50px;
-            height: 50px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid #ffc107;
-            border-radius: 4px;
-            backdrop-filter: blur(4px);
-            box-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
-            z-index: 2;
+        
+        #peca { 
+            position: absolute; 
+            top: 50px; 
+            left: 10px; 
+            width: 50px; 
+            height: 50px; 
+            background: rgba(255, 255, 255, 0.2); 
+            border: 2px solid #ffc107; 
+            border-radius: 4px; 
+            backdrop-filter: blur(4px); 
+            box-shadow: 0 0 10px rgba(255, 193, 7, 0.5); 
+            z-index: 2; 
         }
-
-        .slider-wrapper {
-            position: relative;
-            width: 100%;
-            height: 40px;
-            background: #f0f0f0;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-            display: flex;
-            align-items: center;
+        
+        .slider-wrapper { 
+            position: relative; 
+            width: 100%; 
+            height: 40px; 
+            background: #f0f0f0; 
+            border-radius: 4px; 
+            border: 1px solid #ddd; 
+            display: flex; 
+            align-items: center; 
         }
-
-        .slider-text {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            color: #888;
-            font-size: 13px;
-            pointer-events: none;
+        
+        .slider-text { 
+            position: absolute; 
+            width: 100%; 
+            text-align: center; 
+            color: #888; 
+            font-size: 13px; 
+            pointer-events: none; 
         }
-
-        input[type="range"] {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            opacity: 0;
-            cursor: pointer;
-            z-index: 3;
+        
+        input[type="range"] { 
+            width: 100%; 
+            height: 100%; 
+            margin: 0; 
+            opacity: 0; 
+            cursor: pointer; 
+            z-index: 3; 
         }
-
-        #botao-slider {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 40px;
-            height: 40px;
-            background: #ffc107;
-            border-radius: 4px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            pointer-events: none;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: background 0.3s;
-        }
-
-        /* Ocultar inicialmente até verificar redirecionamento */
-        body.loading #tela-de-bloqueio {
-            display: none;
+        
+        #botao-slider { 
+            position: absolute; 
+            left: 0; 
+            top: 0; 
+            width: 40px; 
+            height: 40px; 
+            background: #ffc107; 
+            border-radius: 4px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            pointer-events: none; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+            transition: background 0.3s; 
         }
     </style>
-    <script>
-        // Redirecionamento instantâneo se já estiver resolvido
-        if (localStorage.getItem('puzzle_resolvido_vip') === 'true') {
-            window.location.replace('/oferta-vip.html');
-        } else {
-            document.documentElement.classList.remove('loading');
-        }
-    </script>
 </head>
 <body>
     <div id="tela-de-bloqueio">
         <h3 style="margin: 0 0 5px 0; color: #333; font-size: 16px; font-weight: bold;">Verificação de Segurança</h3>
         <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">Mostre que você não é um robô</p>
-
+        
         <div class="puzzle-container">
             <div id="alvo"></div>
             <div id="peca"></div>
         </div>
-
+        
         <div class="slider-wrapper">
             <span class="slider-text">Deslize para verificar</span>
             <input type="range" id="slider-puzzle" min="0" max="100" value="0">
@@ -155,12 +142,32 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Dupla checagem caso o script do head tenha falhado por algum motivo
-            if (localStorage.getItem('puzzle_resolvido_vip') === 'true') {
-                window.location.replace('/oferta-vip.html');
-                return;
+            
+            // --- 1. VERIFICAÇÃO DO PASSE VIP (10 MINUTOS) ---
+            const MINUTOS_VALIDADE = 10; 
+            const MS_VALIDADE = MINUTOS_VALIDADE * 60 * 1000; 
+
+            try {
+                const passeSalvoTS = localStorage.getItem('puzzle_resolvido_ts');
+                
+                if (passeSalvoTS) {
+                    const tempoPassado = Date.now() - parseInt(passeSalvoTS);
+                    
+                    if (tempoPassado < MS_VALIDADE) {
+                        // Passe ainda é válido! Esconde o puzzle e teletransporta.
+                        document.getElementById('tela-de-bloqueio').style.display = 'none';
+                        window.location.replace('oferta-vip.html');
+                        return; // Para a execução do script aqui.
+                    } else {
+                        // Passe expirou. Limpa a memória para o cliente fazer de novo.
+                        localStorage.removeItem('puzzle_resolvido_ts');
+                    }
+                }
+            } catch (e) {
+                // Se o navegador bloquear a leitura, o puzzle aparece normalmente.
             }
 
+            // --- 2. LÓGICA BIOMÉTRICA DO PUZZLE ---
             const slider = document.getElementById('slider-puzzle');
             const peca = document.getElementById('peca');
             const botaoSlider = document.getElementById('botao-slider');
@@ -184,10 +191,9 @@
 
             slider.addEventListener('input', function (e) {
                 if (!e.isTrusted) return;
-
                 const val = this.value;
                 rastro.push({ v: val, t: Date.now() });
-
+                
                 const novaPosX = posInicial + (limiteArraste * (val / 100));
                 peca.style.left = novaPosX + 'px';
                 botaoSlider.style.left = `calc(${val}% - ${40 * (val / 100)}px)`;
@@ -206,28 +212,33 @@
                 let movimentosPerfeitos = 0;
                 let intervalos = [];
 
-                for (let i = 1; i < rastro.length; i++) {
-                    intervalos.push(rastro[i].t - rastro[i - 1].t);
+                for (let i = 1; i < rastro.length; i++) { 
+                    intervalos.push(rastro[i].t - rastro[i - 1].t); 
                 }
-
-                for (let i = 1; i < intervalos.length; i++) {
-                    if (intervalos[i] === intervalos[i - 1]) movimentosPerfeitos++;
+                for (let i = 1; i < intervalos.length; i++) { 
+                    if (intervalos[i] === intervalos[i - 1]) movimentosPerfeitos++; 
                 }
-
+                
                 if (movimentosPerfeitos > (intervalos.length * 0.5)) return falhou();
 
-                // --- SUCESSO! ---
-                localStorage.setItem('puzzle_resolvido_vip', 'true');
+                // --- 3. SUCESSO ABSOLUTO (É HUMANO) ---
+                try {
+                    // Salva o momento exato em que o cliente passou no teste
+                    localStorage.setItem('puzzle_resolvido_ts', Date.now().toString());
+                } catch (err) { }
 
+                // Efeito visual verde de sucesso
                 peca.style.borderColor = '#00a650';
                 peca.style.boxShadow = '0 0 15px rgba(0, 166, 80, 0.8)';
                 botaoSlider.style.background = '#00a650';
 
+                // Transição suave e teletransporte
                 setTimeout(() => {
                     document.getElementById('tela-de-bloqueio').style.opacity = '0';
                     document.getElementById('tela-de-bloqueio').style.transition = 'opacity 0.4s ease';
+                    
                     setTimeout(() => {
-                        window.location.replace('/oferta-vip.html');
+                        window.location.replace('oferta-vip.html');
                     }, 400);
                 }, 500);
             });
@@ -235,15 +246,14 @@
             function falhou() {
                 peca.style.transition = 'left 0.3s ease';
                 botaoSlider.style.transition = 'left 0.3s ease, background 0.3s';
-
                 slider.value = 0;
                 peca.style.left = posInicial + 'px';
                 botaoSlider.style.left = '0px';
                 rastro = [];
-
-                setTimeout(() => {
-                    peca.style.transition = 'none';
-                    botaoSlider.style.transition = 'background 0.3s';
+                
+                setTimeout(() => { 
+                    peca.style.transition = 'none'; 
+                    botaoSlider.style.transition = 'background 0.3s'; 
                 }, 300);
             }
         });
