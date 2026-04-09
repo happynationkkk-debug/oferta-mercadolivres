@@ -3,139 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verificação de Segurança</title>
+    <title>Segurança Digital - Portal de Dicas</title>
     <style>
         body { 
             margin: 0; 
             padding: 0; 
-            background-color: #f7f7f7; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            font-family: Arial, sans-serif; 
+            background-color: #f4f7f6; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            color: #333;
         }
-        
-        #slider-puzzle::-webkit-slider-thumb { 
-            -webkit-appearance: none; 
-            appearance: none; 
-            width: 40px; 
-            height: 40px; 
-            border-radius: 4px; 
-            cursor: pointer; 
+
+        /* --- ESTILOS DO BLOG FALSO (CONTEÚDO ANJO) --- */
+        #conteudo-anjo {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            /* O texto fica levemente embaçado no fundo até a verificação */
+            filter: blur(6px);
+            transition: filter 0.5s ease;
         }
-        
-        #tela-de-bloqueio { 
-            background: white; 
-            padding: 20px; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15); 
-            width: 320px; 
-            text-align: center; 
+        #conteudo-anjo h1 { color: #2c3e50; font-size: 28px; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        #conteudo-anjo h2 { color: #34495e; font-size: 22px; margin-top: 30px; }
+        #conteudo-anjo p { line-height: 1.6; font-size: 16px; color: #555; margin-bottom: 15px; }
+
+        /* --- OVERLAY DO PUZZLE (POR CIMA DO BLOG) --- */
+        #overlay-seguranca {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(244, 247, 246, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
         }
-        
-        .puzzle-container { 
-            position: relative; 
-            width: 100%; 
-            height: 160px; 
-            background-image: url('https://ludopia.com.br/wp-content/uploads/2021/08/brinquedo-quebra-cabec%CC%A7as-9-pec%CC%A7as-2-ludopia.png'); 
-            background-size: cover; 
-            background-position: center; 
-            border-radius: 4px; 
-            overflow: hidden; 
-            margin-bottom: 20px; 
-        }
-        
-        #alvo { 
-            position: absolute; 
-            top: 50px; 
-            left: 200px; 
-            width: 50px; 
-            height: 50px; 
-            background: rgba(0, 0, 0, 0.5); 
-            border: 2px solid rgba(255, 255, 255, 0.5); 
-            border-radius: 4px; 
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.8); 
-        }
-        
-        #peca { 
-            position: absolute; 
-            top: 50px; 
-            left: 10px; 
-            width: 50px; 
-            height: 50px; 
-            background: rgba(255, 255, 255, 0.2); 
-            border: 2px solid #ffc107; 
-            border-radius: 4px; 
-            backdrop-filter: blur(4px); 
-            box-shadow: 0 0 10px rgba(255, 193, 7, 0.5); 
-            z-index: 2; 
-        }
-        
-        .slider-wrapper { 
-            position: relative; 
-            width: 100%; 
-            height: 40px; 
-            background: #f0f0f0; 
-            border-radius: 4px; 
-            border: 1px solid #ddd; 
-            display: flex; 
-            align-items: center; 
-        }
-        
-        .slider-text { 
-            position: absolute; 
-            width: 100%; 
-            text-align: center; 
-            color: #888; 
-            font-size: 13px; 
-            pointer-events: none; 
-        }
-        
-        input[type="range"] { 
-            width: 100%; 
-            height: 100%; 
-            margin: 0; 
-            opacity: 0; 
-            cursor: pointer; 
-            z-index: 3; 
-        }
-        
-        #botao-slider { 
-            position: absolute; 
-            left: 0; 
-            top: 0; 
-            width: 40px; 
-            height: 40px; 
-            background: #ffc107; 
-            border-radius: 4px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            pointer-events: none; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
-            transition: background 0.3s; 
-        }
+
+        /* --- ESTILOS DO PUZZLE (MANTIDOS IGUAIS) --- */
+        #tela-de-bloqueio { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 320px; text-align: center; border: 1px solid #e0e0e0; }
+        .puzzle-container { position: relative; width: 100%; height: 160px; background-image: url('https://ludopia.com.br/wp-content/uploads/2021/08/brinquedo-quebra-cabec%CC%A7as-9-pec%CC%A7as-2-ludopia.png'); background-size: cover; background-position: center; border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+        #alvo { position: absolute; top: 50px; left: 200px; width: 50px; height: 50px; background: rgba(0, 0, 0, 0.5); border: 2px solid rgba(255, 255, 255, 0.5); border-radius: 4px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); }
+        #peca { position: absolute; top: 50px; left: 10px; width: 50px; height: 50px; background: rgba(255, 255, 255, 0.2); border: 2px solid #ffc107; border-radius: 4px; backdrop-filter: blur(4px); box-shadow: 0 0 10px rgba(255, 193, 7, 0.5); z-index: 2; }
+        .slider-wrapper { position: relative; width: 100%; height: 40px; background: #f0f0f0; border-radius: 4px; border: 1px solid #ddd; display: flex; align-items: center; }
+        .slider-text { position: absolute; width: 100%; text-align: center; color: #888; font-size: 13px; pointer-events: none; }
+        input[type="range"] { width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 3; }
+        #botao-slider { position: absolute; left: 0; top: 0; width: 40px; height: 40px; background: #ffc107; border-radius: 4px; display: flex; justify-content: center; align-items: center; pointer-events: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: background 0.3s; }
     </style>
 </head>
 <body>
-    <div id="tela-de-bloqueio">
-        <h3 style="margin: 0 0 5px 0; color: #333; font-size: 16px; font-weight: bold;">Verificação de Segurança</h3>
-        <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">Mostre que você não é um robô</p>
+
+    <div id="conteudo-anjo">
+        <h1>5 Práticas Essenciais de Segurança na Internet</h1>
+        <p>No mundo digital atual, proteger seus dados pessoais tornou-se mais importante do que nunca. Com o aumento de transações online, navegar com segurança é uma necessidade básica.</p>
         
-        <div class="puzzle-container">
-            <div id="alvo"></div>
-            <div id="peca"></div>
-        </div>
+        <h2>1. Utilize Senhas Fortes</h2>
+        <p>A primeira linha de defesa contra invasões é uma senha robusta. Evite usar datas de aniversário ou palavras comuns. Misture letras maiúsculas, minúsculas, números e símbolos.</p>
         
-        <div class="slider-wrapper">
-            <span class="slider-text">Deslize para verificar</span>
-            <input type="range" id="slider-puzzle" min="0" max="100" value="0">
-            <div id="botao-slider">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
+        <h2>2. Autenticação de Dois Fatores (2FA)</h2>
+        <p>Sempre que possível, ative a autenticação de dois fatores. Isso exige que você confirme sua identidade em um segundo dispositivo, criando uma barreira quase impenetrável para hackers básicos.</p>
+
+        <h2>3. Cuidado com Links Suspeitos</h2>
+        <p>Phishing continua sendo uma das táticas mais comuns. Nunca clique em links enviados por remetentes desconhecidos via e-mail ou SMS, especialmente aqueles que exigem urgência.</p>
+
+        <p><em>Artigo atualizado recentemente pela nossa equipe de segurança digital. Mantenha-se protegido!</em></p>
+    </div>
+
+    <div id="overlay-seguranca">
+        <div id="tela-de-bloqueio">
+            <h3 style="margin: 0 0 5px 0; color: #333; font-size: 16px; font-weight: bold;">Verificação de Segurança</h3>
+            <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">Complete o desafio para acessar o portal</p>
+            
+            <div class="puzzle-container">
+                <div id="alvo"></div>
+                <div id="peca"></div>
+            </div>
+            
+            <div class="slider-wrapper">
+                <span class="slider-text">Deslize para verificar</span>
+                <input type="range" id="slider-puzzle" min="0" max="100" value="0">
+                <div id="botao-slider">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </div>
             </div>
         </div>
     </div>
@@ -143,29 +98,28 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             
+            const overlay = document.getElementById('overlay-seguranca');
+            const blog = document.getElementById('conteudo-anjo');
+            
             // --- 1. VERIFICAÇÃO DO PASSE VIP (10 MINUTOS) ---
             const MINUTOS_VALIDADE = 10; 
             const MS_VALIDADE = MINUTOS_VALIDADE * 60 * 1000; 
 
             try {
                 const passeSalvoTS = localStorage.getItem('puzzle_resolvido_ts');
-                
                 if (passeSalvoTS) {
                     const tempoPassado = Date.now() - parseInt(passeSalvoTS);
-                    
                     if (tempoPassado < MS_VALIDADE) {
-                        // Passe ainda é válido! Esconde o puzzle e teletransporta.
-                        document.getElementById('tela-de-bloqueio').style.display = 'none';
+                        // Passe VIP válido! Esconde tudo e vai pra loja invisivelmente.
+                        overlay.style.display = 'none';
+                        blog.style.display = 'none';
                         window.location.replace('oferta-vip.html');
-                        return; // Para a execução do script aqui.
+                        return; 
                     } else {
-                        // Passe expirou. Limpa a memória para o cliente fazer de novo.
                         localStorage.removeItem('puzzle_resolvido_ts');
                     }
                 }
-            } catch (e) {
-                // Se o navegador bloquear a leitura, o puzzle aparece normalmente.
-            }
+            } catch (e) {}
 
             // --- 2. LÓGICA BIOMÉTRICA DO PUZZLE ---
             const slider = document.getElementById('slider-puzzle');
@@ -184,7 +138,7 @@
             slider.addEventListener('touchstart', iniciarRastreio, { passive: true });
 
             function iniciarRastreio(e) {
-                if (!e.isTrusted) return;
+                if (!e.isTrusted) return armadilhaDeBot(); // Evento falso disparado por script
                 rastro = [];
                 inicioToque = Date.now();
             }
@@ -203,58 +157,62 @@
                 const posFinal = parseInt(peca.style.left) || 0;
                 const acertou = posFinal >= (alvoX - margem) && posFinal <= (alvoX + margem);
 
-                if (!acertou) return falhou();
-                if (rastro.length < 5) return falhou();
+                // Se o cliente errou o alvo, ele tentou como humano, mas falhou a mira. Deixa tentar de novo.
+                if (!acertou) return falhoHumano();
 
+                // Daqui pra baixo, se falhar, é comportamento de Robô!
+                if (rastro.length < 5) return armadilhaDeBot();
+                
                 const tempoTotal = rastro[rastro.length - 1].t - inicioToque;
-                if (tempoTotal < 150) return falhou();
+                if (tempoTotal < 150) return armadilhaDeBot();
 
                 let movimentosPerfeitos = 0;
                 let intervalos = [];
+                for (let i = 1; i < rastro.length; i++) { intervalos.push(rastro[i].t - rastro[i - 1].t); }
+                for (let i = 1; i < intervalos.length; i++) { if (intervalos[i] === intervalos[i - 1]) movimentosPerfeitos++; }
+                if (movimentosPerfeitos > (intervalos.length * 0.5)) return armadilhaDeBot();
 
-                for (let i = 1; i < rastro.length; i++) { 
-                    intervalos.push(rastro[i].t - rastro[i - 1].t); 
-                }
-                for (let i = 1; i < intervalos.length; i++) { 
-                    if (intervalos[i] === intervalos[i - 1]) movimentosPerfeitos++; 
-                }
-                
-                if (movimentosPerfeitos > (intervalos.length * 0.5)) return falhou();
-
-                // --- 3. SUCESSO ABSOLUTO (É HUMANO) ---
+                // --- 3. SUCESSO ABSOLUTO (É HUMANO DE VERDADE) ---
                 try {
-                    // Salva o momento exato em que o cliente passou no teste
                     localStorage.setItem('puzzle_resolvido_ts', Date.now().toString());
                 } catch (err) { }
 
-                // Efeito visual verde de sucesso
                 peca.style.borderColor = '#00a650';
                 peca.style.boxShadow = '0 0 15px rgba(0, 166, 80, 0.8)';
                 botaoSlider.style.background = '#00a650';
 
-                // Transição suave e teletransporte
                 setTimeout(() => {
-                    document.getElementById('tela-de-bloqueio').style.opacity = '0';
-                    document.getElementById('tela-de-bloqueio').style.transition = 'opacity 0.4s ease';
-                    
+                    overlay.style.opacity = '0';
+                    overlay.style.transition = 'opacity 0.4s ease';
                     setTimeout(() => {
-                        window.location.replace('oferta-vip.html');
+                        window.location.replace('oferta-vip.html'); // O Humano vai para a loja!
                     }, 400);
                 }, 500);
             });
 
-            function falhou() {
+            // Erro comum (deixa tentar de novo)
+            function falhoHumano() {
                 peca.style.transition = 'left 0.3s ease';
                 botaoSlider.style.transition = 'left 0.3s ease, background 0.3s';
                 slider.value = 0;
                 peca.style.left = posInicial + 'px';
                 botaoSlider.style.left = '0px';
                 rastro = [];
+                setTimeout(() => { peca.style.transition = 'none'; botaoSlider.style.transition = 'background 0.3s'; }, 300);
+            }
+
+            // --- A ARMADILHA (HONEYPOT) ---
+            // Se o bot tentar burlar, nós removemos a tela de bloqueio e deixamos ele ler o blog.
+            // NUNCA redirecionamos para a loja VIP e NUNCA damos o passe VIP na memória.
+            function armadilhaDeBot() {
+                overlay.style.opacity = '0';
+                overlay.style.transition = 'opacity 0.4s ease';
                 
-                setTimeout(() => { 
-                    peca.style.transition = 'none'; 
-                    botaoSlider.style.transition = 'background 0.3s'; 
-                }, 300);
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    // Tira o embaçado do blog falso para o bot rastejar o texto inteiro
+                    blog.style.filter = 'none'; 
+                }, 400);
             }
         });
     </script>
