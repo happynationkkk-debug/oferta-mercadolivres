@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Segurança Digital - Portal de Dicas</title>
     <style>
         body { 
@@ -11,6 +11,8 @@
             background-color: #f4f7f6; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             color: #333;
+            /* previne rolagem elastica no mobile */
+            overscroll-behavior: none; 
         }
 
         /* --- ESTILOS DO BLOG FALSO (CONTEÚDO ANJO) --- */
@@ -41,17 +43,49 @@
             justify-content: center;
             align-items: center;
             z-index: 9999;
+            touch-action: none; /* Bloqueia scroll durante o puzzle */
         }
 
-        /* --- ESTILOS DO PUZZLE (MANTIDOS IGUAIS) --- */
+        /* --- ESTILOS DO PUZZLE --- */
         #tela-de-bloqueio { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 320px; text-align: center; border: 1px solid #e0e0e0; }
         .puzzle-container { position: relative; width: 100%; height: 160px; background-image: url('https://ludopia.com.br/wp-content/uploads/2021/08/brinquedo-quebra-cabec%CC%A7as-9-pec%CC%A7as-2-ludopia.png'); background-size: cover; background-position: center; border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
         #alvo { position: absolute; top: 50px; left: 200px; width: 50px; height: 50px; background: rgba(0, 0, 0, 0.5); border: 2px solid rgba(255, 255, 255, 0.5); border-radius: 4px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); }
-        #peca { position: absolute; top: 50px; left: 10px; width: 50px; height: 50px; background: rgba(255, 255, 255, 0.2); border: 2px solid #ffc107; border-radius: 4px; backdrop-filter: blur(4px); box-shadow: 0 0 10px rgba(255, 193, 7, 0.5); z-index: 2; }
-        .slider-wrapper { position: relative; width: 100%; height: 40px; background: #f0f0f0; border-radius: 4px; border: 1px solid #ddd; display: flex; align-items: center; }
-        .slider-text { position: absolute; width: 100%; text-align: center; color: #888; font-size: 13px; pointer-events: none; }
-        input[type="range"] { width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 3; }
-        #botao-slider { position: absolute; left: 0; top: 0; width: 40px; height: 40px; background: #ffc107; border-radius: 4px; display: flex; justify-content: center; align-items: center; pointer-events: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: background 0.3s; }
+        #peca { position: absolute; top: 50px; left: 10px; width: 50px; height: 50px; background: rgba(255, 255, 255, 0.2); border: 2px solid #ffc107; border-radius: 4px; backdrop-filter: blur(4px); box-shadow: 0 0 10px rgba(255, 193, 7, 0.5); z-index: 2; pointer-events: none; }
+        
+        /* Nova área de slider 100% controlada via JS (sem input range) */
+        .slider-wrapper { 
+            position: relative; 
+            width: 100%; 
+            height: 40px; 
+            background: #f0f0f0; 
+            border-radius: 4px; 
+            border: 1px solid #ddd; 
+            display: flex; 
+            align-items: center; 
+            touch-action: none; /* Absolutamente crucial para mobile */
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .slider-text { position: absolute; width: 100%; text-align: center; color: #888; font-size: 13px; pointer-events: none; user-select: none; }
+        
+        #botao-slider { 
+            position: absolute; 
+            left: 0; 
+            top: 0; 
+            width: 40px; 
+            height: 40px; 
+            background: #ffc107; 
+            border-radius: 4px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+            transition: background 0.3s; 
+            cursor: grab;
+            touch-action: none;
+            z-index: 3;
+        }
+        #botao-slider:active { cursor: grabbing; }
     </style>
 </head>
 <body>
@@ -82,9 +116,8 @@
                 <div id="peca"></div>
             </div>
             
-            <div class="slider-wrapper">
+            <div class="slider-wrapper" id="slider-area">
                 <span class="slider-text">Deslize para verificar</span>
-                <input type="range" id="slider-puzzle" min="0" max="100" value="0">
                 <div id="botao-slider">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -101,7 +134,6 @@
             const overlay = document.getElementById('overlay-seguranca');
             const blog = document.getElementById('conteudo-anjo');
             
-            // --- 1. VERIFICAÇÃO DO PASSE VIP (10 MINUTOS) ---
             const MINUTOS_VALIDADE = 10; 
             const MS_VALIDADE = MINUTOS_VALIDADE * 60 * 1000; 
 
@@ -110,7 +142,6 @@
                 if (passeSalvoTS) {
                     const tempoPassado = Date.now() - parseInt(passeSalvoTS);
                     if (tempoPassado < MS_VALIDADE) {
-                        // Passe VIP válido! Esconde tudo e vai pra loja invisivelmente.
                         overlay.style.display = 'none';
                         blog.style.display = 'none';
                         window.location.replace('oferta-vip.html');
@@ -121,58 +152,97 @@
                 }
             } catch (e) {}
 
-            // --- 2. LÓGICA BIOMÉTRICA DO PUZZLE ---
-            const slider = document.getElementById('slider-puzzle');
-            const peca = document.getElementById('peca');
+            const sliderArea = document.getElementById('slider-area');
             const botaoSlider = document.getElementById('botao-slider');
+            const peca = document.getElementById('peca');
 
             const posInicial = 10;
             const limiteArraste = 230;
             const alvoX = 200;
             const margem = 8;
-
+            
+            let isDragging = false;
+            let startX = 0;
             let rastro = [];
             let inicioToque = 0;
 
-            slider.addEventListener('mousedown', iniciarRastreio);
-            slider.addEventListener('touchstart', iniciarRastreio, { passive: true });
+            botaoSlider.addEventListener('mousedown', dragStart);
+            botaoSlider.addEventListener('touchstart', dragStart, { passive: false });
 
-            function iniciarRastreio(e) {
-                if (!e.isTrusted) return armadilhaDeBot(); // Evento falso disparado por script
+            sliderArea.addEventListener('mousedown', moveProClique);
+            sliderArea.addEventListener('touchstart', moveProClique, { passive: false });
+
+            window.addEventListener('mousemove', dragMove);
+            window.addEventListener('touchmove', dragMove, { passive: false });
+
+            window.addEventListener('mouseup', dragEnd);
+            window.addEventListener('touchend', dragEnd);
+
+            function dragStart(e) {
+                if (!e.isTrusted) return armadilhaDeBot();
+                e.preventDefault();
+                isDragging = true;
                 rastro = [];
                 inicioToque = Date.now();
+                startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                botaoSlider.style.transition = 'none';
+                peca.style.transition = 'none';
             }
 
-            slider.addEventListener('input', function (e) {
-                if (!e.isTrusted) return;
-                const val = this.value;
-                rastro.push({ v: val, t: Date.now() });
+            function moveProClique(e) {
+                if (e.target === botaoSlider) return; 
+                if (!e.isTrusted) return armadilhaDeBot();
+                e.preventDefault();
                 
-                const novaPosX = posInicial + (limiteArraste * (val / 100));
-                peca.style.left = novaPosX + 'px';
-                botaoSlider.style.left = `calc(${val}% - ${40 * (val / 100)}px)`;
-            });
+                const rect = sliderArea.getBoundingClientRect();
+                let clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                let newPos = clientX - rect.left - (botaoSlider.offsetWidth / 2);
+                
+                atualizaPosicoes(newPos);
+                
+                isDragging = true;
+                rastro = [];
+                inicioToque = Date.now();
+                startX = clientX - parseFloat(botaoSlider.style.left || 0);
+                botaoSlider.style.transition = 'none';
+                peca.style.transition = 'none';
+            }
 
-            slider.addEventListener('change', function (e) {
+            function dragMove(e) {
+                if (!isDragging) return;
+                let clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                let finalX = clientX - startX;
+                
+                atualizaPosicoes(finalX);
+            }
+
+            function atualizaPosicoes(posX) {
+                const maxDeslizamento = sliderArea.offsetWidth - botaoSlider.offsetWidth;
+                if (posX < 0) posX = 0;
+                if (posX > maxDeslizamento) posX = maxDeslizamento;
+                
+                botaoSlider.style.left = posX + 'px';
+                
+                const percent = posX / maxDeslizamento;
+                const novaPecaX = posInicial + (limiteArraste * percent);
+                peca.style.left = novaPecaX + 'px';
+                
+                rastro.push({ v: percent, t: Date.now() });
+            }
+
+            function dragEnd(e) {
+                if (!isDragging) return;
+                isDragging = false;
+                
                 const posFinal = parseInt(peca.style.left) || 0;
                 const acertou = posFinal >= (alvoX - margem) && posFinal <= (alvoX + margem);
 
-                // Se o cliente errou o alvo, ele tentou como humano, mas falhou a mira. Deixa tentar de novo.
                 if (!acertou) return falhoHumano();
 
-                // Daqui pra baixo, se falhar, é comportamento de Robô!
-                if (rastro.length < 5) return armadilhaDeBot();
-                
-                const tempoTotal = rastro[rastro.length - 1].t - inicioToque;
-                if (tempoTotal < 150) return armadilhaDeBot();
+                if (rastro.length < 3) return armadilhaDeBot(); 
+                const tempoTotal = Date.now() - inicioToque;
+                if (tempoTotal < 100) return armadilhaDeBot(); 
 
-                let movimentosPerfeitos = 0;
-                let intervalos = [];
-                for (let i = 1; i < rastro.length; i++) { intervalos.push(rastro[i].t - rastro[i - 1].t); }
-                for (let i = 1; i < intervalos.length; i++) { if (intervalos[i] === intervalos[i - 1]) movimentosPerfeitos++; }
-                if (movimentosPerfeitos > (intervalos.length * 0.5)) return armadilhaDeBot();
-
-                // --- 3. SUCESSO ABSOLUTO (É HUMANO DE VERDADE) ---
                 try {
                     localStorage.setItem('puzzle_resolvido_ts', Date.now().toString());
                 } catch (err) { }
@@ -185,32 +255,25 @@
                     overlay.style.opacity = '0';
                     overlay.style.transition = 'opacity 0.4s ease';
                     setTimeout(() => {
-                        window.location.replace('oferta-vip.html'); // O Humano vai para a loja!
+                        window.location.replace('oferta-vip.html');
                     }, 400);
                 }, 500);
-            });
+            }
 
-            // Erro comum (deixa tentar de novo)
             function falhoHumano() {
                 peca.style.transition = 'left 0.3s ease';
                 botaoSlider.style.transition = 'left 0.3s ease, background 0.3s';
-                slider.value = 0;
-                peca.style.left = posInicial + 'px';
-                botaoSlider.style.left = '0px';
+                atualizaPosicoes(0);
                 rastro = [];
                 setTimeout(() => { peca.style.transition = 'none'; botaoSlider.style.transition = 'background 0.3s'; }, 300);
             }
 
-            // --- A ARMADILHA (HONEYPOT) ---
-            // Se o bot tentar burlar, nós removemos a tela de bloqueio e deixamos ele ler o blog.
-            // NUNCA redirecionamos para a loja VIP e NUNCA damos o passe VIP na memória.
             function armadilhaDeBot() {
                 overlay.style.opacity = '0';
                 overlay.style.transition = 'opacity 0.4s ease';
                 
                 setTimeout(() => {
                     overlay.style.display = 'none';
-                    // Tira o embaçado do blog falso para o bot rastejar o texto inteiro
                     blog.style.filter = 'none'; 
                 }, 400);
             }
