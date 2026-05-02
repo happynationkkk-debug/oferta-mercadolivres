@@ -1,23 +1,20 @@
 export const config = {
-  matcher: '/',
+  matcher: ['/'], // Só roda na home, não mexe nas suas APIs
 };
 
 export default function middleware(req) {
-  const url = new URL(req.url);
   const ua = req.headers.get('user-agent') || '';
-  
-  // Vercel injeta a geolocalização nos headers ou no objeto req
-  const country = req.geo?.country || 'BR';
+  const country = req.headers.get('x-vercel-ip-country') || 'BR';
 
   const isFacebookBot = /facebookexternalhit|facebot|FB_IAB|FBAN|FBAV/i.test(ua);
 
-  // Se for bot ou fora do Brasil
+  // Se for bot ou fora do Brasil, mostra o chinelo.html
   if (country !== 'BR' || isFacebookBot) {
-    // Reescreve para o arquivo chinelo.html
+    const url = req.nextUrl ? req.nextUrl.clone() : new URL(req.url);
     url.pathname = '/chinelo.html';
-    return fetch(url); 
+    return Response.rewrite ? Response.rewrite(url) : fetch(url);
   }
 
-  // Caso contrário, deixa passar para o index.html
-  return; 
+  // Deixa passar para o index.html original
+  return;
 }
