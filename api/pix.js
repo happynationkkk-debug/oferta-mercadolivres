@@ -17,7 +17,26 @@ module.exports = async function(req, res) {
             body: JSON.stringify(bodyObj) 
         });
 
-        const resposta = await requisicao.json();
+        // --- AQUI ESTÁ A MUDANÇA PARA PEGAR O ERRO ---
+        const textoResposta = await requisicao.text(); // Pega como texto primeiro
+
+        if (!requisicao.ok) {
+            console.error("ERRO DA MISTICPAY (TEXTO):", textoResposta);
+            return res.status(requisicao.status).json({ 
+                error: "Erro na integradora", 
+                detalhes: textoResposta 
+            });
+        }
+
+        // Se chegou aqui e está OK, aí sim tentamos tratar como JSON
+        let resposta;
+        try {
+            resposta = JSON.parse(textoResposta);
+        } catch (e) {
+            console.error("ERRO AO DAR PARSE NO JSON. Recebido:", textoResposta);
+            return res.status(500).send("O servidor enviou um formato inválido.");
+        }
+        // --------------------------------------------
 
         if (resposta && resposta.data && resposta.data.transactionId) {
             const supabaseUrl = 'https://rbolfrvtaulvdqajhryd.supabase.co';
@@ -36,7 +55,6 @@ module.exports = async function(req, res) {
                 }
             }
 
-            // NOVA PARTE: O VIGIA DO SUPABASE
             const supaReq = await fetch(`${supabaseUrl}/rest/v1/pedidos`, {
                 method: 'POST',
                 headers: {
@@ -55,12 +73,11 @@ module.exports = async function(req, res) {
                 })
             });
 
-            // Se o Supabase rejeitar, ele vai cuspir o erro real no log da Vercel!
             if (!supaReq.ok) {
                 const erroRealSupa = await supaReq.text();
                 console.error("ERRO GRAVE DO SUPABASE:", erroRealSupa);
             } else {
-                console.log("SUCESSO: Linha criada no Supabase antes do pagamento!");
+                console.log("SUCESSO: Linha criada no Supabase!");
             }
         }
 
