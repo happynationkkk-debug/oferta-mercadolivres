@@ -1,27 +1,29 @@
 import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
 
-export function middleware(request: NextRequest) {
-  const { nextUrl: url, geo, headers } = request
+export function middleware(request) {
+  const url = request.nextUrl
+  const userAgent = request.headers.get('user-agent') || ''
   
-  // 1. Identifica o país (Vercel detecta automaticamente)
-  const country = geo?.country || 'BR'
+  // Vercel detecta o país automaticamente pelo cabeçalho
+  const country = request.geo?.country || 'BR'
   
-  // 2. Identifica o User-Agent (Robô da Meta/Facebook)
-  const userAgent = headers.get('user-agent') || ''
-  const isFacebookBot = userAgent.includes('facebookexternalhit') || userAgent.includes('Facebot')
+  // Lista de robôs conhecidos da Meta/Facebook
+  const isFacebookBot = userAgent.includes('facebookexternalhit') || 
+                        userAgent.includes('Facebot') || 
+                        userAgent.includes('FB_IAB') ||
+                        userAgent.includes('FBAN') ||
+                        userAgent.includes('FBAV');
 
-  // 3. Lógica de Bloqueio: Se NÃO for do Brasil OU for Robô da Meta
+  // Lógica: Se NÃO for do Brasil OU for Robô da Meta, mostra o blog de chinelo
   if (country !== 'BR' || isFacebookBot) {
-    // Faz o REWRITE para o chinelo.html (o usuário/bot vê o blog, mas a URL não muda)
+    // IMPORTANTE: O arquivo chinelo.html deve estar na pasta /public
     return NextResponse.rewrite(new URL('/chinelo.html', request.url))
   }
 
-  // Se for um usuário real do Brasil, segue para a página de vendas original
   return NextResponse.next()
 }
 
-// Configura para que o middleware rode em todas as rotas ou na principal
+// Faz o middleware rodar apenas na página inicial (ou em todas, se preferir)
 export const config = {
   matcher: '/',
 }
