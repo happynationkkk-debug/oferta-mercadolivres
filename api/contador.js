@@ -18,7 +18,7 @@ export default async function(req, res) {
     try {
         const supabaseUrl = 'https://rbolfrvtaulvdqajhryd.supabase.co'; 
         // ⚠️ LEMBRE-SE: Nunca deixe sua chave exposta em produção. Use variáveis de ambiente!
-        const supabaseSecretKey = process.env.SUPABASE_KEY || 'SUA_CHAVE_AQUI';
+        const supabaseSecretKey = process.env.SUPABASE_KEY || 'sb_secret_-0MxutxgZw5kZBmNUd9b0w_5BJfkxoY';
 
         const supaReq = await fetch(`${supabaseUrl}/rest/v1/visitas`, {
             method: 'POST',
