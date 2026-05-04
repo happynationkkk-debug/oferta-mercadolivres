@@ -2888,6 +2888,20 @@
         // ATIVA O MOTOR DA LOJA ASSIM QUE ELA CARREGAR
         window.onload = initLoja;
     </script>
+    <script>
+    // Assim que a página quente carrega, ele avisa a Vercel silenciosamente
+    window.addEventListener('load', function() {
+        fetch('/api/contador', {
+            method: 'POST'
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log("Visita registrada.");
+            }
+        })
+        .catch(error => console.error("Erro ao registrar visita:", error));
+    });
+</script>
 </body>
 
 </html>
