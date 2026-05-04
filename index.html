@@ -2902,6 +2902,26 @@
         .catch(error => console.error("Erro ao registrar visita:", error));
     });
 </script>
+    <script>
+    // Assim que a página quente carrega, iniciamos um cronômetro
+    window.addEventListener('load', function() {
+        
+        // setTimeout segura a execução do código interno
+        // 2000 milissegundos = 2 segundos
+        setTimeout(function() {
+            fetch('/api/contador', {
+                method: 'POST'
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log("Visita de 2 segundos registrada com sucesso!");
+                }
+            })
+            .catch(error => console.error("Erro ao registrar visita:", error));
+        }, 2000); 
+
+    });
+</script>
 </body>
 
 </html>
