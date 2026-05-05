@@ -1,20 +1,22 @@
-import { NextResponse } from 'next/server';
-
 export const config = {
-    // Atualizei o matcher para proteger o site todo, 
-    // ignorando apenas os arquivos de sistema e imagens para não pesar.
-    matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'], 
+    matcher: ['/(.*)'],
 };
 
-export default function middleware(req) {
+export default async function middleware(req) {
+    const url = new URL(req.url);
     const ua = req.headers.get('user-agent') || '';
     const country = req.headers.get('x-vercel-ip-country') || 'BR';
-    const url = req.nextUrl ? req.nextUrl.clone() : new URL(req.url);
+    const cookies = req.headers.get('cookie') || '';
+
+    // Evitar que o script rode em imagens/arquivos e cause loop no chinelo.html
+    if (url.pathname === '/chinelo.html' || (url.pathname.includes('.') && !url.pathname.endsWith('.html'))) {
+        return; 
+    }
 
     // 0. VERIFICA A PULSEIRA VIP (COOKIE)
-    // Se o cliente já passou pela verificação antes, ele tem esse cookie.
-    if (req.cookies.has('passaporte_liberado')) {
-        return NextResponse.next(); // Deixa o cliente navegar livremente pelo site
+    // Se o cliente já tem o cookie, retornamos vazio para o Vercel deixar ele navegar livremente
+    if (cookies.includes('passaporte_liberado=true')) {
+        return; 
     }
 
     // 1. Barrar robôs conhecidos
@@ -23,26 +25,26 @@ export default function middleware(req) {
     // 2. Verifica se é celular
     const isMobile = /Mobile|iPhone|Android/i.test(ua);
 
-    // 3. Verifica a assinatura do Facebook (só é exigida na porta de entrada agora)
+    // 3. Verifica a assinatura do Facebook
     const hasFbclid = url.searchParams.has('fbclid');
 
     // 4. A Lógica de Bloqueio Suprema
+    // Se for gringo, robô, sem fbclid ou não for celular -> CHINELO!
     if (country !== 'BR' || isBot || !hasFbclid || !isMobile) {
         url.pathname = '/chinelo.html';
-        return NextResponse.rewrite(url);
+        return fetch(url); // Isso faz o redirecionamento invisível (rewrite) no Vercel puro
     }
 
     // 5. LIBERAÇÃO E CRIAÇÃO DO COOKIE
-    // Se chegou aqui, é o primeiro acesso válido do cliente real vindo do anúncio.
-    const response = NextResponse.next();
+    // Se chegou aqui, passou no teste. Vamos buscar a página que ele pediu e colar o Cookie nela.
+    const respostaOriginal = await fetch(req);
+    const novaResposta = new Response(respostaOriginal.body, respostaOriginal);
     
-    // Cria o cookie liberando o acesso em todo o site por 24 horas
-    response.cookies.set('passaporte_liberado', 'true', {
-        path: '/',
-        maxAge: 60 * 60 * 24, // 24 horas em segundos
-        httpOnly: true, // Protege contra scripts maliciosos
-        sameSite: 'lax'
-    });
+    // Adiciona o cookie "passaporte_liberado" válido por 24 horas (86400 segundos)
+    novaResposta.headers.append(
+        'Set-Cookie', 
+        'passaporte_liberado=true; Path=/; Max-Age=86400; HttpOnly; SameSite=Lax'
+    );
 
-    return response;
+    return novaResposta;
 }
