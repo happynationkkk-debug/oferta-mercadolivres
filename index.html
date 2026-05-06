@@ -987,7 +987,7 @@
         </main>
     </div>
 
-  <div id="view-pix" class="view-section pb-10 bg-[#f5f5f5]">
+<div id="view-pix" class="view-section pb-10 bg-[#f5f5f5]">
         <header class="ml-yellow h-[56px] flex items-center px-4 justify-center shadow-sm sticky top-0 z-50">
             <span class="font-semibold text-gray-700">Pagamento</span>
         </header>
@@ -1043,19 +1043,8 @@
                 </div>
             </div>
 
-            <!-- Resumo do Pedido -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 w-full mt-2">
-                <div class="flex justify-between items-center mb-3">
-                    <span class="text-gray-500 text-sm">Pedido</span>
-                    <span class="text-gray-800 text-sm font-medium" id="pix-pedido-numero">--</span>
-                </div>
-                <div class="flex justify-between items-center mb-6">
-                    <span class="text-gray-500 text-sm">Valor</span>
-                    <span class="text-gray-900 font-bold text-base" id="pix-pedido-valor">R$ --</span>
-                </div>
-                
-                <button class="text-[#0f4e35] font-medium text-sm text-left w-full hover:underline" onclick="voltarParaLoja()">Acompanhar meus pedidos</button>
-            </div>
+            <!-- Botão de Voltar para não travar o usuário -->
+            <button class="text-[#0f4e35] font-medium text-sm text-center w-full mt-4 hover:underline p-2" onclick="voltarParaLoja()">Acompanhar meus pedidos</button>
 
             <!-- Cronômetro Oculto para manter a lógica funcionando -->
             <div id="timer-container" class="hidden">
