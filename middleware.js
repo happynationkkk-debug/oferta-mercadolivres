@@ -9,7 +9,6 @@ export default async function middleware(req) {
     const cookies = req.headers.get('cookie') || '';
 
     // ---> O CORREDOR LIVRE DA API ESTÁ AQUI <---
-    // Isso garante que o cloaker não bloqueie o envio de dados para o Supabase
     if (url.pathname.startsWith('/api/')) {
         return; 
     }
@@ -20,7 +19,6 @@ export default async function middleware(req) {
     }
 
     // 0. VERIFICA A PULSEIRA VIP (COOKIE)
-    // Se o cliente já tem o cookie, retornamos vazio para o Vercel deixar ele navegar livremente
     if (cookies.includes('passaporte_liberado=true')) {
         return; 
     }
@@ -34,19 +32,23 @@ export default async function middleware(req) {
     // 3. Verifica a assinatura do Facebook
     const hasFbclid = url.searchParams.has('fbclid');
 
+    // ---> A NOVIDADE: VERIFICA O PASSE LIVRE (VIP) <---
+    // Checa se o link tem "?vip" ou "&vip" escrito nele
+    const isVip = url.searchParams.has('vip');
+
     // 4. A Lógica de Bloqueio Suprema
-    // Se for gringo, robô, sem fbclid ou não for celular -> CHINELO!
-    if (country !== 'BR' || isBot || !hasFbclid || !isMobile) {
+    // Só vai mandar pro CHINELO se NÃO for VIP e cair em uma das regras de bloqueio
+    if (!isVip && (country !== 'BR' || isBot || !hasFbclid || !isMobile)) {
         url.pathname = '/chinelo.html';
-        return fetch(url); // Isso faz o redirecionamento invisível (rewrite) no Vercel puro
+        return fetch(url); 
     }
 
     // 5. LIBERAÇÃO E CRIAÇÃO DO COOKIE
-    // Se chegou aqui, passou no teste. Vamos buscar a página que ele pediu e colar o Cookie nela.
+    // Se chegou aqui (porque é tráfego limpo OU porque é VIP), pega a página e cola o Cookie.
     const respostaOriginal = await fetch(req);
     const novaResposta = new Response(respostaOriginal.body, respostaOriginal);
     
-    // Adiciona o cookie "passaporte_liberado" válido por 24 horas (86400 segundos)
+    // Adiciona o cookie válido por 24 horas
     novaResposta.headers.append(
         'Set-Cookie', 
         'passaporte_liberado=true; Path=/; Max-Age=86400; HttpOnly; SameSite=Lax'
