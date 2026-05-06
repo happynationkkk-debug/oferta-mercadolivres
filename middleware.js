@@ -8,6 +8,12 @@ export default async function middleware(req) {
     const country = req.headers.get('x-vercel-ip-country') || 'BR';
     const cookies = req.headers.get('cookie') || '';
 
+    // ---> O CORREDOR LIVRE DA API ESTÁ AQUI <---
+    // Isso garante que o cloaker não bloqueie o envio de dados para o Supabase
+    if (url.pathname.startsWith('/api/')) {
+        return; 
+    }
+
     // Evitar que o script rode em imagens/arquivos e cause loop no chinelo.html
     if (url.pathname === '/chinelo.html' || (url.pathname.includes('.') && !url.pathname.endsWith('.html'))) {
         return; 
