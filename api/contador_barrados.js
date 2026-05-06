@@ -31,8 +31,8 @@ export default async function handler(req, res) {
 
         // ⚠️ ATENÇÃO: Aqui está enviando para a tabela "visitas". 
         // Se você criou uma tabela separada para os barrados no Supabase (ex: acessos_barrados), mude a palavra "visitas" abaixo.
-        const supaReq = await fetch(`${supabaseUrl}/rest/v1/visitas`, {
-            method: 'POST',
+const supaReq = await fetch(`${supabaseUrl}/rest/v1/acessos_barrados`, {
+    method: 'POST',
             headers: {
                 'apikey': supabaseSecretKey,
                 'Authorization': `Bearer ${supabaseSecretKey}`,
