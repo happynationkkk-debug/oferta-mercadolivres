@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Conecta ao seu Supabase usando as variáveis de ambiente da Vercel
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseUrl = process.env.'https://rbolfrvtaulvdqajhryd.supabase.co';
+const supabaseKey = process.env.'sb_secret_-0MxutxgZw5kZBmNUd9b0w_5BJfkxoY';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default async function handler(req, res) {
