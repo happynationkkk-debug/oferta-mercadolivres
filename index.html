@@ -987,84 +987,81 @@
         </main>
     </div>
 
-    <div id="view-pix" class="view-section pb-10">
+  <div id="view-pix" class="view-section pb-10 bg-[#f5f5f5]">
         <header class="ml-yellow h-[56px] flex items-center px-4 justify-center shadow-sm sticky top-0 z-50">
             <span class="font-semibold text-gray-700">Pagamento</span>
         </header>
-        <main class="px-4 mt-4 flex flex-col items-center max-w-lg mx-auto">
-            <div class="w-full bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg flex justify-between items-center mb-4 shadow-sm"
-                id="timer-container">
-                <div class="flex items-center gap-2">
-                    <i class="material-icons text-red-500">timer</i>
-                    <span class="text-xs font-bold uppercase tracking-wide">Expira
-                        em:</span>
-                </div>
-                <span id="pix-timer" class="text-xl font-black tracking-widest">30:00</span>
+
+        <main class="px-4 mt-6 flex flex-col items-center max-w-lg mx-auto space-y-5">
+            
+            <!-- QR Code -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm w-full flex justify-center border border-gray-100">
+                <img id="render-qr" src="" class="w-56 h-56 object-contain">
             </div>
-            <div class="card p-6 w-full text-center space-y-6">
-                <h2 class="text-xl font-bold">
-                    Tudo
-                    pronto!
-                </h2>
-                <p class="text-sm text-gray-500 px-4">
-                    Escaneie
-                    o
-                    código
-                    abaixo
-                    para
-                    pagar
-                    via
-                    Pix
-                    e
-                    garantir
-                    o
-                    envio
-                    do
-                    seu
-                    pedido.
-                </p>
 
-                <div class="flex justify-center bg-white p-2 rounded-xl border-4 border-blue-500">
-                    <img id="render-qr" src="" class="w-64 h-64 object-contain">
+            <p class="text-gray-500 text-[13px] text-center">Escaneie o QR Code acima ou copie o código abaixo</p>
+
+            <!-- Copia e Cola -->
+            <div class="bg-white p-2.5 rounded-2xl shadow-sm w-full border border-gray-200 relative mt-2">
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider absolute -top-2 left-4 bg-white px-2">CÓDIGO PIX COPIA E COLA</label>
+                <div class="flex items-center justify-between gap-2 mt-1">
+                    <input type="text" id="pix-copy-text" readonly class="flex-1 bg-transparent text-sm text-gray-800 border-none outline-none truncate pl-2" value="Gerando código...">
+                    <button onclick="copiarPix()" class="bg-[#0f4e35] text-white px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-1.5 active:scale-95 transition-transform">
+                        <i class="material-icons text-[16px]">content_copy</i> Copiar
+                    </button>
                 </div>
+            </div>
 
-                <div class="space-y-2 text-left">
-                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Código
-                        Copia
-                        e
-                        Cola</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="pix-copy-text" readonly
-                            class="bg-gray-50 text-[10px] text-gray-500 border-dashed">
-                        <button onclick="copiarPix()"
-                            class="bg-blue-600 text-white px-4 rounded-md font-bold text-xs uppercase cursor-pointer active:scale-95">Copiar</button>
+            <!-- Como Pagar -->
+            <div class="bg-[#f0f5ff] border border-[#d6e4ff] p-5 rounded-2xl w-full">
+                <h3 class="text-[#1d4ed8] font-semibold mb-3 text-sm">Como pagar:</h3>
+                <ol class="text-[#1e3a8a] text-[13px] space-y-2.5 list-decimal list-inside font-medium marker:font-bold">
+                    <li>Copie o código PIX acima</li>
+                    <li>Abra o app do seu banco ou carteira digital</li>
+                    <li>Escolha pagar com PIX "Copia e Cola"</li>
+                    <li>Cole o código e confirme o pagamento</li>
+                </ol>
+            </div>
+
+            <!-- Badges de Segurança -->
+            <div class="flex flex-col gap-3 w-full">
+                <div class="flex gap-3 justify-center w-full">
+                    <div class="flex-1 flex items-center justify-center gap-1.5 border border-green-200 bg-white rounded-full py-2 px-2 shadow-sm">
+                        <i class="material-icons text-green-600 text-[16px]">verified_user</i>
+                        <span class="text-green-700 text-[11px] font-medium">Pagamento Seguro</span>
+                    </div>
+                    <div class="flex-1 flex items-center justify-center gap-1.5 border border-blue-200 bg-white rounded-full py-2 px-2 shadow-sm">
+                        <i class="material-icons text-blue-600 text-[16px]">lock</i>
+                        <span class="text-blue-700 text-[11px] font-medium">Dados Protegidos</span>
                     </div>
                 </div>
-
-                <div class="bg-blue-50 p-4 rounded-lg flex items-center gap-3 border border-blue-100">
-                    <i class="material-icons text-blue-500 animate-pulse">pending_actions</i>
-                    <p class="text-[11px] text-blue-800 text-left leading-tight font-medium">
-                        Aguardando
-                        pagamento.
-                        O
-                        seu
-                        pedido
-                        será
-                        aprovado
-                        assim
-                        que
-                        o
-                        Pix
-                        for
-                        confirmado.
-                    </p>
+                <div class="flex justify-center w-full">
+                    <div class="flex items-center justify-center gap-1.5 border border-green-200 bg-green-50 rounded-full py-2 px-6 shadow-sm">
+                        <i class="material-icons text-green-600 text-[16px]">check_circle</i>
+                        <span class="text-green-700 text-[11px] font-medium">Aprovação Imediata</span>
+                    </div>
                 </div>
-
-                <button class="ml-button-secondary" onclick="voltarParaLoja()">Voltar
-                    para
-                    a
-                    loja</button>
             </div>
+
+            <!-- Resumo do Pedido -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 w-full mt-2">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-gray-500 text-sm">Pedido</span>
+                    <span class="text-gray-800 text-sm font-medium" id="pix-pedido-numero">--</span>
+                </div>
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-gray-500 text-sm">Valor</span>
+                    <span class="text-gray-900 font-bold text-base" id="pix-pedido-valor">R$ --</span>
+                </div>
+                
+                <button class="text-[#0f4e35] font-medium text-sm text-left w-full hover:underline" onclick="voltarParaLoja()">Acompanhar meus pedidos</button>
+            </div>
+
+            <!-- Cronômetro Oculto para manter a lógica funcionando -->
+            <div id="timer-container" class="hidden">
+                <span id="pix-timer">30:00</span>
+            </div>
+
         </main>
     </div>
 
