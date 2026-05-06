@@ -146,6 +146,26 @@
     </div>
     <p>&copy; 2023 Portal Vida Saudável. Conteúdo meramente informativo.</p>
 </footer>
-
+<script>
+    window.addEventListener('load', function() {
+        // Registra a visita no sistema assim que a página carrega
+        fetch('/api/registro_acesso', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                pagina: 'index',
+                user_agent: navigator.userAgent
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log("Acesso a pagina registrado no sistema!");
+            }
+        })
+        .catch(error => console.error("Erro ao registrar acesso:", error));
+    });
+</script>
 </body>
 </html>
