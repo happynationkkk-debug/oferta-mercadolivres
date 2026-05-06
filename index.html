@@ -1489,6 +1489,9 @@
                 // Popula a tela com os dados reais retornados pela MisticPay
                 document.getElementById('render-qr').src = retorno.data.qrCodeBase64;
                 document.getElementById('pix-copy-text').value = retorno.data.copyPaste;
+                // Preenche o resumo do pedido na tela do PIX
+document.getElementById('pix-pedido-numero').innerText = myTransactionId.replace('PED_', '');
+document.getElementById('pix-pedido-valor').innerText = valorFinalAposDesconto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
                 // Finaliza o fluxo: esconde o loading, zera o carrinho e muda de tela
                 loading.style.display = 'none';
