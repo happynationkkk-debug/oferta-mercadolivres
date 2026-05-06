@@ -1,40 +1,60 @@
-import { createClient } from '@supabase/supabase-js';
-
-// Conecta ao seu Supabase usando as variáveis de ambiente da Vercel
-const supabaseUrl = process.env.'https://rbolfrvtaulvdqajhryd.supabase.co';
-const supabaseKey = process.env.'sb_secret_-0MxutxgZw5kZBmNUd9b0w_5BJfkxoY';
-const supabase = createClient(supabaseUrl, supabaseKey);
-
 export default async function handler(req, res) {
-    // Só aceita requisições POST
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Método não permitido' });
+    // 1. Libera a segurança do navegador (CORS)
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Origin', '*'); 
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    // 2. Responde à "pergunta de segurança" do navegador
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
     }
 
-    // Pega os dados enviados pelo script do chinelo.html
-    const { pagina, user_agent } = req.body;
-    
-    // Tentativa extra de pegar o User-Agent pelo cabeçalho (útil contra alguns bots)
-    const agenteFinal = user_agent || req.headers['user-agent'] || 'Desconhecido';
+    if (req.method !== 'POST' && req.method !== 'GET') {
+        return res.status(405).send('Método não permitido');
+    }
 
     try {
-        // ATENÇÃO: Mude 'acessos_barrados' para o nome exato da sua nova tabela no Supabase
-        const { data, error } = await supabase
-            .from('acessos_barrados') 
-            .insert([
-                {
-                    pagina: pagina || 'chinelo',
-                    user_agent: agenteFinal
-                }
-            ]);
+        // Pega os dados enviados pelo front-end (chinelo.html)
+        const corpo = req.body || {};
+        
+        // Mantém o disfarce: se não vier nome, salva como 'index'
+        const paginaDisfarcada = corpo.pagina || 'index'; 
 
-        if (error) {
-            throw error;
+        // Pega o User-Agent do corpo ou do cabeçalho como garantia
+        const userAgent = corpo.user_agent || req.headers['user-agent'] || 'Desconhecido';
+
+        const supabaseUrl = 'https://rbolfrvtaulvdqajhryd.supabase.co'; 
+        
+        // Sua chave fixa conforme você pediu
+        const supabaseSecretKey = 'sb_secret_-0MxutxgZw5kZBmNUd9b0w_5BJfkxoY';
+
+        // ⚠️ ATENÇÃO: Aqui está enviando para a tabela "visitas". 
+        // Se você criou uma tabela separada para os barrados no Supabase (ex: acessos_barrados), mude a palavra "visitas" abaixo.
+        const supaReq = await fetch(`${supabaseUrl}/rest/v1/visitas`, {
+            method: 'POST',
+            headers: {
+                'apikey': supabaseSecretKey,
+                'Authorization': `Bearer ${supabaseSecretKey}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({ 
+                pagina: paginaDisfarcada, // Vai salvar no banco como 'index'
+                user_agent: userAgent
+            })
+        });
+
+        if (!supaReq.ok) {
+            const erro = await supaReq.text();
+            console.error("Erro ao registrar acesso barrado no Supabase:", erro);
+            return res.status(500).json({ error: "Falha ao registrar" });
         }
 
-        return res.status(200).json({ message: 'Acesso barrado salvo com sucesso!' });
-    } catch (error) {
-        console.error('Erro ao salvar no Supabase:', error);
-        return res.status(500).json({ error: 'Erro interno ao salvar.' });
+        return res.status(200).json({ message: "Acesso registrado de forma oculta com sucesso!" });
+
+    } catch (erro) {
+        console.error("Erro interno no contador:", erro);
+        return res.status(500).send('Erro interno');
     }
 }
